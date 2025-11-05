@@ -138,7 +138,7 @@ function query_batch(
                     $rcode = 2;
                 }
 
-                if ($rcode === 0) {
+                if ($rcode === 0 || $rcode === 3) {          // 0 = NoError, 3 = NXDomain
                     if (function_exists("apcu_store")) {
                         apcu_store($cache_key, $resp, $cache_ttl);
                     }
