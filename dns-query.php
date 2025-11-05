@@ -39,6 +39,16 @@ function now_ms()
     return (int) round(microtime(true) * 1000);
 }
 
+function maybe_gzip(string $body): string
+{
+    if (strlen($body) > 100 &&
+        strpos($_SERVER['HTTP_ACCEPT_ENCODING'] ?? '', 'gzip') !== false) {
+        $body = gzencode($body, 6);
+        header('Content-Encoding: gzip');
+    }
+    return $body;
+}
+
 function error_json($code, $message)
 {
     header_remove();
@@ -83,6 +93,7 @@ $cache_key = "doh_" . md5($method . ":" . $extra_query . ":" . $body);
 if (function_exists("apcu_fetch")) {
     $cached = apcu_fetch($cache_key);
     if ($cached !== false) {
+        $cached = maybe_gzip($cached);
         header("Content-Type: application/dns-message");
         echo $cached;
         exit();
@@ -143,6 +154,7 @@ function query_batch(
                     if (function_exists("apcu_store")) {
                         apcu_store($cache_key, $resp, $cache_ttl);
                     }
+                    $resp = maybe_gzip($resp);
                     header("Content-Type: application/dns-message");
                     echo $resp;
 
@@ -188,6 +200,7 @@ for ($i = 0; $i < count($upstreams) && $i/$batch_size < $max_batches; $i += $bat
         if (function_exists("apcu_store")) {
             apcu_store($cache_key, $res, $cache_ttl);
         }
+        $res = maybe_gzip($res);
         header("Content-Type: application/dns-message");
         echo $res;
         exit();
