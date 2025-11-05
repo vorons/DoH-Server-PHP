@@ -74,6 +74,9 @@ if ($method === "GET") {
 }
 
 $body = file_get_contents("php://input");
+if (strlen($body) > 4096) {
+    error_json(413, "DNS message too large");
+}
 $cache_key = "doh_" . md5($method . ":" . $extra_query . ":" . $body);
 
 if (function_exists("apcu_fetch")) {
