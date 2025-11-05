@@ -172,7 +172,8 @@ function query_batch(
 }
 
 $first_failure = null;
-for ($i = 0; $i < count($upstreams); $i += $batch_size) {
+$max_batches = 4;
+for ($i = 0; $i < count($upstreams) && $i/$batch_size < $max_batches; $i += $batch_size) {
     $batch = array_slice($upstreams, $i, $batch_size);
     $res = query_batch(
         $batch,
