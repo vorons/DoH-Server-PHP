@@ -41,6 +41,7 @@ function now_ms()
 
 function error_json($code, $message)
 {
+    header_remove();
     http_response_code($code);
     header("Content-Type: application/json");
     echo json_encode(
