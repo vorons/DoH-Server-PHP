@@ -150,7 +150,7 @@ function query_batch(
                     $rcode = 2;
                 }
 
-                if ($rcode === 0 || $rcode === 3) {          // 0 = NoError, 3 = NXDomain
+                if ($rcode === 0 || $rcode === 3) {
                     if (function_exists("apcu_store")) {
                         apcu_store($cache_key, $resp, $cache_ttl);
                     }
@@ -197,9 +197,10 @@ for ($i = 0; $i < count($upstreams) && $i/$batch_size < $max_batches; $i += $bat
         $cache_key
     );
     if ($res !== null) {
-        if (function_exists("apcu_store")) {
-            apcu_store($cache_key, $res, $cache_ttl);
-        }
+        $rcode = strlen($res) >= 4 ? ord($res[3]) & 0x0F : 2;
+            if (($rcode === 0 || $rcode === 3) && function_exists("apcu_store")) {
+                apcu_store($cache_key, $res, $cache_ttl);
+            }
         $res = maybe_gzip($res);
         header("Content-Type: application/dns-message");
         echo $res;
